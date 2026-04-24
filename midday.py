@@ -1,24 +1,29 @@
-from daily_log import Midday
+from daily_log import Midday, CSV_FILE
 import pandas as pd
 import os
+from time import localtime, strftime
 
 
 class MiddayRunner:
     def __init__(self):
         pass
 
-    def check_file_exists(self):
-        if os.path.exists("daily_log.csv"):
-            return 1
-        return 0
+    def current_date(self):
+        return strftime("%d/%m/%Y", localtime())
 
-    def check_row_exist(self):
-        date = input("Would you please enter the date of today(dd/mm/yyyy): ").strip()
+    def current_time(self):
+        return strftime("%H:%M", localtime())
+
+    def check_file_exists(self):
+        return os.path.exists(CSV_FILE)
+
+    def check_row_exists(self):
+        date = self.current_date()
         flag = 0
         row_index = None
 
-        if self.check_file_exists() == 1:
-            df = pd.read_csv("daily_log.csv")
+        if self.check_file_exists():
+            df = pd.read_csv(CSV_FILE)
 
             for idx, row in enumerate(df["date"]):
                 if str(row).strip() == date:
@@ -28,35 +33,57 @@ class MiddayRunner:
 
         return flag, date, row_index
 
+    def get_non_empty_input(self, prompt):
+        while True:
+            value = input(prompt).strip()
+            if value:
+                return value
+            print("This field cannot be empty.")
+
+    def get_float_input(self, prompt):
+        while True:
+            value = input(prompt).strip()
+            try:
+                return float(value)
+            except ValueError:
+                print("Please enter a valid number, for example 2 or 2.5")
+
+    def get_choice_input(self, prompt, allowed_values):
+        while True:
+            value = input(prompt).strip().lower()
+            if value in allowed_values:
+                return value
+            print(f"Invalid input. Allowed values: {', '.join(allowed_values)}")
+
     def midday_row(self):
         print("Would you please answer the following questions:\n")
 
-        if self.check_file_exists() == 0:
+        if not self.check_file_exists():
             print("daily_log.csv file not found")
             return None
 
-        flag, date, row_index = self.check_row_exist()
+        flag, date, row_index = self.check_row_exists()
 
         if flag == 0:
             print(f"No row found for date {date}")
             return None
 
         midday1 = Midday(
-            time_stamp=input("The exact time we are filling this data(HH:MM): \n").strip(),
-            current_activity=input("Would you please enter the current activity: \n").strip(),
-            hours_done=float(input("How many hours have been done so far?: \n").strip()),
-            on_track=input("Are we on track: \n").strip(),
+            time_stamp=self.current_time(),
+            current_activity=self.get_non_empty_input("Would you please enter the current activity: \n"),
+            hours_done=self.get_float_input("How many hours have been done so far?: \n"),
+            on_track=self.get_choice_input("Are we on track? (yes / no): \n", ["yes", "no"]),
             adjustment=input("Any adjustment for today?: \n").strip() or None,
         )
 
-        df = pd.read_csv("daily_log.csv")
+        df = pd.read_csv(CSV_FILE)
 
-        df.loc[row_index, "time_stamp"] = midday1.time_stamp
+        df.loc[row_index, "midday_time_stamp"] = midday1.time_stamp
         df.loc[row_index, "midday_current_activity"] = midday1.current_activity
         df.loc[row_index, "midday_hours_done"] = midday1.hours_done
         df.loc[row_index, "midday_on_track"] = midday1.on_track
         df.loc[row_index, "midday_adjustment"] = midday1.adjustment
 
-        df.to_csv("daily_log.csv", index=False)
+        df.to_csv(CSV_FILE, index=False)
 
         return midday1

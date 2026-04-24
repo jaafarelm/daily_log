@@ -1,90 +1,124 @@
-from daily_log import Identity, Shift, Sleep, Morning as MorningData, DailyLog
+from daily_log import Identity, Shift, Sleep, Morning as MorningData, DailyLog, CSV_FILE, CSV_HEADERS
 import os
 import pandas as pd
+from time import localtime, strftime
+from datetime import datetime, timedelta
 
 
 class MorningRunner:
     def __init__(self):
         pass
 
+    def current_date(self):
+        return strftime("%d/%m/%Y", localtime())
+
+    def current_time(self):
+        return strftime("%H:%M", localtime())
+
     def check_file_exists(self):
-        if os.path.exists("daily_log.csv"):
-            return 1
-        return 0
+        return os.path.exists(CSV_FILE)
 
     def create_daily_log(self):
-        headers = [
-            "date",
-            "day_type",
-            "shift_start_time",
-            "shift_end_time",
-            "shift_hours",
-            "sleep_start_time",
-            "wake_time",
-            "sleep_hours",
-            "front_a_task",
-            "front_b_task",
-            "front_c_task",
-            "planned_hours_total",
-            "planned_main_activity",
-            "minimum_day_target",
-            "weekly_objective_reference",
-            "midday_current_activity",
-            "midday_hours_done",
-            "midday_on_track",
-            "midday_adjustment",
-            "actual_hours_total",
-            "actual_main_activity",
-            "time_stamp",
-            "front_a_done",
-            "front_b_done",
-            "front_c_done",
-            "target_completed",
-            "failure_reason",
-            "main_output_of_day",
-            "tomorrow_first_task",
-            "note",
-        ]
-
         if not self.check_file_exists():
-            df = pd.DataFrame(columns=headers)
-            df.to_csv("daily_log.csv", index=False)
+            df = pd.DataFrame(columns=CSV_HEADERS)
+            df.to_csv(CSV_FILE, index=False)
+
+    def check_row_exists(self, date_value):
+        if not self.check_file_exists():
+            return False
+
+        df = pd.read_csv(CSV_FILE)
+        return any(str(row).strip() == date_value for row in df["date"])
+
+    def get_non_empty_input(self, prompt):
+        while True:
+            value = input(prompt).strip()
+            if value:
+                return value
+            print("This field cannot be empty.")
+
+    def get_choice_input(self, prompt, allowed_values):
+        while True:
+            value = input(prompt).strip().lower()
+            if value in allowed_values:
+                return value
+            print(f"Invalid input. Allowed values: {', '.join(allowed_values)}")
+
+    def get_float_input(self, prompt):
+        while True:
+            value = input(prompt).strip()
+            try:
+                return float(value)
+            except ValueError:
+                print("Please enter a valid number, for example 6 or 6.5")
+
+    def get_time_input(self, prompt):
+        while True:
+            value = input(prompt).strip()
+            try:
+                datetime.strptime(value, "%H:%M")
+                return value
+            except ValueError:
+                print("Use time format HH:MM")
+
+    def calculate_hours(self, start_time, end_time):
+        if start_time is None or end_time is None:
+            return None
+
+        start_dt = datetime.strptime(start_time, "%H:%M")
+        end_dt = datetime.strptime(end_time, "%H:%M")
+
+        if end_dt < start_dt:
+            end_dt += timedelta(days=1)
+
+        diff = end_dt - start_dt
+        return round(diff.total_seconds() / 3600, 2)
 
     def new_row(self):
         print("Would you please answer the following questions:\n")
 
+        today_date = self.current_date()
+
+        if self.check_row_exists(today_date):
+            print(f"A row for {today_date} already exists.")
+            return None
+
         id1 = Identity(
-            date=input("enter the date of today (dd/mm/yyyy): \n:").strip(),
-            day_type=input("enter the day type of today (shift / non_shift): \n:").strip()
+            date=today_date,
+            day_type=self.get_choice_input("enter the day type of today (shift / non_shift): \n:", ["shift", "non_shift"])
         )
 
         if id1.day_type == "shift":
+            shift_start = self.get_time_input("enter the start of the shift of today (HH:MM): \n:")
+            shift_end = self.get_time_input("enter the end of the shift of today (HH:MM): \n:")
             shift1 = Shift(
-                start=input("enter the start of the shift of today: \n:").strip(),
-                end=input("enter the end of the shift of today: \n:").strip()
-            )
-        elif (id1.day_type == "non_shift"):
-            shift1 = Shift(
-                start = None,
-                end = None
+                start=shift_start,
+                end=shift_end,
+                hours=self.calculate_hours(shift_start, shift_end)
             )
         else:
-            print("Invalid day type.")
-            return None
+            shift1 = Shift(
+                start=None,
+                end=None,
+                hours=None
+            )
 
+        sleep_start = self.get_time_input("enter the start of your sleep (HH:MM): \n:")
+        wake_time = self.get_time_input("enter the end / wake time of your sleep (HH:MM): \n:")
         sleep1 = Sleep(
-            start=input("enter the start of your sleep: \n:").strip(),
-            end=input("enter the end / wake time of your sleep: \n:").strip()
+            start=sleep_start,
+            end=wake_time,
+            hours=self.calculate_hours(sleep_start, wake_time)
         )
 
         morning1 = MorningData(
-            time_stamp=input("enter time_stamp(HH:MM) \n:").strip(),
-            front_a_task=input("enter front A task: \n:").strip(),
-            front_b_task=input("enter front B task: \n:").strip(),
-            front_c_task=input("enter front C task: \n:").strip(),
-            planned_hours_total=float(input("enter planned hours total: \n:").strip()),
-            main_activity=input("enter the main activity of today: \n:").strip(),
-            minimum_day_target=input("enter the minimum day target: \n:").strip(),
+            time_stamp=self.current_time(),
+            front_a_task=self.get_non_empty_input("enter front A task: \n:"),
+            front_b_task=self.get_non_empty_input("enter front B task: \n:"),
+            front_c_task=self.get_non_empty_input("enter front C task: \n:"),
+            planned_hours_total=self.get_float_input("enter planned hours total: \n:"),
+            main_activity=self.get_non_empty_input("enter the main activity of today: \n:"),
+            minimum_day_target=self.get_non_empty_input("enter the minimum day target: \n:"),
             weekly_objective_reference=input("enter weekly objective reference (optional): \n:").strip() or None
         )
 
@@ -104,6 +138,7 @@ class MorningRunner:
             "sleep_start_time": daily1.sleep.start,
             "wake_time": daily1.sleep.end,
             "sleep_hours": daily1.sleep.hours,
+            "morning_time_stamp": daily1.morning.time_stamp,
             "front_a_task": daily1.morning.front_a_task,
             "front_b_task": daily1.morning.front_b_task,
             "front_c_task": daily1.morning.front_c_task,
@@ -111,13 +146,14 @@ class MorningRunner:
             "planned_main_activity": daily1.morning.main_activity,
             "minimum_day_target": daily1.morning.minimum_day_target,
             "weekly_objective_reference": daily1.morning.weekly_objective_reference,
+            "midday_time_stamp": None,
             "midday_current_activity": None,
             "midday_hours_done": None,
             "midday_on_track": None,
             "midday_adjustment": None,
+            "night_time_stamp": None,
             "actual_hours_total": None,
             "actual_main_activity": None,
-            "time_stamp": None,
             "front_a_done": None,
             "front_b_done": None,
             "front_c_done": None,
@@ -125,24 +161,15 @@ class MorningRunner:
             "failure_reason": None,
             "main_output_of_day": None,
             "tomorrow_first_task": None,
-            "note": None
+            "note": None,
         }
 
         df = pd.DataFrame([row_data])
         df.to_csv(
-            "daily_log.csv",
+            CSV_FILE,
             mode="a",
-            header=not os.path.exists("daily_log.csv"),
+            header=not os.path.exists(CSV_FILE),
             index=False
         )
 
         return daily1
-
-    def run(self):
-        self.create_daily_log()
-        return self.new_row()
-
-
-if __name__ == "__main__":
-    app = MorningRunner()
-    app.run()
