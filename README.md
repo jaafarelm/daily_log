@@ -1,45 +1,43 @@
 # Daily Log CLI App
 
-A Python command-line app for planning, tracking, and reviewing a day through three stages:
+A Python command-line application for structured daily execution tracking, built around three daily checkpoints:
 
-- **Morning** → define the day
-- **Midday** → update progress
-- **Night** → record the final outcome
+- Morning check: plan the day
+- Midday check: review and adjust the day
+- Night check: close the day and record the outcome
 
-The app stores everything in a single CSV file and updates the same row for the same date throughout the day.
+The app also includes an LLM advisory layer that reads the user's logged data and provides short, practical advice based on the current context.
 
-## Why I Built It
+## Purpose
 
-I built this project for three reasons:
+This project was built to solve a real execution problem: maintaining discipline, clarity, and progress while balancing work, study, job applications, side projects, and personal constraints.
 
-1. To create a personal operating system for my daily execution
-2. To rebuild my Python and software-engineering fluency through a real project
-3. To create a base system that can later grow into analytics, LLM-assisted reflection, and smarter decision support
-
-This is not just a logging app. It is the beginning of a structured execution system.
+The goal is not simply to create a diary. The goal is to create a structured execution system that captures reality, tracks progress, and uses LLM-based reflection to support better decisions.
 
 ## Current Features
 
-- Morning check:
-  - creates a new row for the day
-  - records day type, shift/sleep details, and Front A / B / C tasks
-- Midday check:
-  - updates the existing row for the same date
-  - records current activity, hours done, on-track status, and adjustment
-- Night check:
-  - updates the existing row for the same date
-  - records final output, completion status, and next task
-- CSV-based persistence
+- Morning planning workflow
+- Midday progress update workflow
+- Night review workflow
+- One-row-per-day structure in `daily_log.csv`
+- Same-day updates for midday and night entries
+- Automatic date and timestamp handling
 - Input validation for key fields
-- Shift / non-shift branching
-- One-row-per-day lifecycle
+- Shift and non-shift day support
+- Sleep and shift duration calculation
+- OpenAI-powered advice mode
+- Free-question LLM advice mode
+- Separate `analysis_log.csv` for storing AI-generated reflections
+- Shared utility functions for repeated logic
 
 ## Project Structure
 
 ```text
-daily_log.py   # data classes / domain models
-morning.py     # morning workflow
-midday.py      # midday update workflow
-night.py       # night close workflow
-main.py        # main entry point
-daily_log.csv  # generated log file
+daily_log.py      # Data models, CSV constants, and schema definitions
+main.py           # Main CLI entry point and menu routing
+morning.py        # Morning planning workflow
+midday.py         # Midday progress update workflow
+night.py          # Night review workflow
+LLM.py            # LLM advisory layer
+utils.py          # Shared helper functions
+requirements.txt  # Project dependencies
