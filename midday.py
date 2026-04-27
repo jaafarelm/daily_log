@@ -2,6 +2,7 @@ from daily_log import Midday, CSV_FILE
 import pandas as pd
 import os
 from time import localtime, strftime
+from utils import current_date, current_time, check_file_exists, get_non_empty_input, get_choice_input, get_float_input
 
 
 class MiddayRunner:
@@ -33,28 +34,6 @@ class MiddayRunner:
 
         return flag, date, row_index
 
-    def get_non_empty_input(self, prompt):
-        while True:
-            value = input(prompt).strip()
-            if value:
-                return value
-            print("This field cannot be empty.")
-
-    def get_float_input(self, prompt):
-        while True:
-            value = input(prompt).strip()
-            try:
-                return float(value)
-            except ValueError:
-                print("Please enter a valid number, for example 2 or 2.5")
-
-    def get_choice_input(self, prompt, allowed_values):
-        while True:
-            value = input(prompt).strip().lower()
-            if value in allowed_values:
-                return value
-            print(f"Invalid input. Allowed values: {', '.join(allowed_values)}")
-
     def midday_row(self):
         print("Would you please answer the following questions:\n")
 
@@ -70,9 +49,9 @@ class MiddayRunner:
 
         midday1 = Midday(
             time_stamp=self.current_time(),
-            current_activity=self.get_non_empty_input("Would you please enter the current activity: \n"),
-            hours_done=self.get_float_input("How many hours have been done so far?: \n"),
-            on_track=self.get_choice_input("Are we on track? (yes / no): \n", ["yes", "no"]),
+            current_activity=get_non_empty_input("Would you please enter the current activity: \n"),
+            hours_done=get_float_input("How many hours have been done so far?: \n"),
+            on_track=get_choice_input("Are we on track? (yes / no): \n", ["yes", "no"]),
             adjustment=input("Any adjustment for today?: \n").strip() or None,
         )
 

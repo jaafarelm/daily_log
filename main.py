@@ -2,7 +2,7 @@ from morning import MorningRunner
 from midday import MiddayRunner
 from night import NightRunner
 from LLM import LogAdvisor
-
+from utils import Utils
 
 class MainApp:
     def __init__(self):
@@ -10,6 +10,7 @@ class MainApp:
         self.midday_runner = MiddayRunner()
         self.night_runner = NightRunner()
         self.log_advisor = LogAdvisor()
+        self.utils = Utils()
 
     def menu(self):
         print("\n=== DAILY LOG APP ===")
@@ -26,7 +27,7 @@ class MainApp:
             choice = input("Choose an option: ").strip()
 
             if choice == "1":
-                self.morning_runner.create_daily_log()
+                self.utils.create_daily_log()
                 self.morning_runner.new_row()
 
             elif choice == "2":
