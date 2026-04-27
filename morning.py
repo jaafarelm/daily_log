@@ -1,13 +1,24 @@
-from daily_log import Identity, Shift, Sleep, Morning as MorningData, DailyLog, CSV_FILE, CSV_HEADERS
-import os
+from daily_log import Identity, Shift, Sleep, Morning as MorningData, DailyLog, CSV_FILE
+from utils import (
+    current_date,
+    current_time,
+    check_file_exists,
+    create_daily_log as create_daily_log_file,
+    get_non_empty_input,
+    get_choice_input,
+    get_float_input,
+    get_time_input,
+    calculate_hours,
+)
 import pandas as pd
-from time import localtime, strftime
-from datetime import datetime, timedelta
-from utils import current_date, current_time, check_file_exists, get_non_empty_input, get_choice_input, get_float_input, get_time_input, calculate_hours
+
 
 class MorningRunner:
     def __init__(self):
         pass
+
+    def create_daily_log(self):
+        create_daily_log_file()
 
     def check_row_exists(self, date_value):
         if not check_file_exists():
@@ -27,12 +38,16 @@ class MorningRunner:
 
         id1 = Identity(
             date=today_date,
-            day_type=get_choice_input("enter the day type of today (shift / non_shift): \n:", ["shift", "non_shift"])
+            day_type=get_choice_input(
+                "enter the day type of today (shift / non_shift): \n:",
+                ["shift", "non_shift"]
+            )
         )
 
         if id1.day_type == "shift":
             shift_start = get_time_input("enter the start of the shift of today (HH:MM): \n:")
             shift_end = get_time_input("enter the end of the shift of today (HH:MM): \n:")
+
             shift1 = Shift(
                 start=shift_start,
                 end=shift_end,
@@ -47,6 +62,7 @@ class MorningRunner:
 
         sleep_start = get_time_input("enter the start of your sleep (HH:MM): \n:")
         wake_time = get_time_input("enter the end / wake time of your sleep (HH:MM): \n:")
+
         sleep1 = Sleep(
             start=sleep_start,
             end=wake_time,
@@ -110,7 +126,7 @@ class MorningRunner:
         df.to_csv(
             CSV_FILE,
             mode="a",
-            header=not os.path.exists(CSV_FILE),
+            header=not check_file_exists(),
             index=False
         )
 

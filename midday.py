@@ -1,29 +1,25 @@
 from daily_log import Midday, CSV_FILE
+from utils import (
+    current_date,
+    current_time,
+    check_file_exists,
+    get_non_empty_input,
+    get_float_input,
+    get_choice_input,
+)
 import pandas as pd
-import os
-from time import localtime, strftime
-from utils import current_date, current_time, check_file_exists, get_non_empty_input, get_choice_input, get_float_input
 
 
 class MiddayRunner:
     def __init__(self):
         pass
 
-    def current_date(self):
-        return strftime("%d/%m/%Y", localtime())
-
-    def current_time(self):
-        return strftime("%H:%M", localtime())
-
-    def check_file_exists(self):
-        return os.path.exists(CSV_FILE)
-
     def check_row_exists(self):
-        date = self.current_date()
+        date = current_date()
         flag = 0
         row_index = None
 
-        if self.check_file_exists():
+        if check_file_exists():
             df = pd.read_csv(CSV_FILE)
 
             for idx, row in enumerate(df["date"]):
@@ -37,7 +33,7 @@ class MiddayRunner:
     def midday_row(self):
         print("Would you please answer the following questions:\n")
 
-        if not self.check_file_exists():
+        if not check_file_exists():
             print("daily_log.csv file not found")
             return None
 
@@ -48,7 +44,7 @@ class MiddayRunner:
             return None
 
         midday1 = Midday(
-            time_stamp=self.current_time(),
+            time_stamp=current_time(),
             current_activity=get_non_empty_input("Would you please enter the current activity: \n"),
             hours_done=get_float_input("How many hours have been done so far?: \n"),
             on_track=get_choice_input("Are we on track? (yes / no): \n", ["yes", "no"]),

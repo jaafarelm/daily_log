@@ -1,8 +1,13 @@
 from daily_log import Night, CSV_FILE
+from utils import (
+    current_date,
+    current_time,
+    check_file_exists,
+    get_non_empty_input,
+    get_float_input,
+    get_choice_input,
+)
 import pandas as pd
-import os
-from time import localtime, strftime
-from utils import current_date, current_time, check_file_exists, get_non_empty_input, get_choice_input, get_float_input
 
 
 class NightRunner:
@@ -25,7 +30,6 @@ class NightRunner:
 
         return flag, date, row_index
 
-
     def night_row(self):
         print("Would you please answer the following questions:\n")
 
@@ -39,7 +43,10 @@ class NightRunner:
             print(f"No row found for date {date}")
             return None
 
-        target_completed_value = get_choice_input("Was the target completed? (yes / no): \n", ["yes", "no"])
+        target_completed_value = get_choice_input(
+            "Was the target completed? (yes / no): \n",
+            ["yes", "no"]
+        )
 
         failure_reason_value = None
         if target_completed_value == "no":
