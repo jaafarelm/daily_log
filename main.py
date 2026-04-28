@@ -2,7 +2,7 @@ from morning import MorningRunner
 from midday import MiddayRunner
 from night import NightRunner
 from LLM import LogAdvisor
-
+from utils import view_tasks
 
 class MainApp:
     def __init__(self):
@@ -10,7 +10,6 @@ class MainApp:
         self.midday_runner = MiddayRunner()
         self.night_runner = NightRunner()
         self.log_advisor = LogAdvisor()
-
     def menu(self):
         print("\n=== DAILY LOG APP ===")
         print("1. Morning check")
@@ -18,7 +17,8 @@ class MainApp:
         print("3. Night check")
         print("4. Get advice")
         print("5. Free advice")
-        print("6. Exit")
+        print("6. Check today's task")
+        print("7. Exit")
 
     def run(self):
         while True:
@@ -48,8 +48,9 @@ class MainApp:
 
                 print("\n=== FREE ADVICE ===")
                 print(advice)
-
             elif choice == "6":
+                view_tasks()
+            elif choice == "7":
                 print("Exiting app.")
                 break
 

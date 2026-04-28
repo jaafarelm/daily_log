@@ -101,7 +101,7 @@ class LogAdvisor:
             raise ValueError("day_time must be 'morning', 'midday', or 'night'")
 
         response_text = self.creating_response(content)
-        self.save_analysis(day_time, response_text)
+        self.save_analysis(day_time, response_text, content)
         return response_text
 
     def save_analysis(self, day_time, response_text, question):

@@ -71,3 +71,20 @@ def calculate_hours(start_time, end_time):
 
     diff = end_dt - start_dt
     return round(diff.total_seconds() / 3600, 2)
+
+def view_tasks():
+    df = pd.read_csv("daily_log.csv")
+    if df.empty:
+        print("No daily log rows found.")
+        return
+
+    row = df.iloc[-1]
+
+    print("\n=== TODAY'S TASKS ===")
+    print(f"Date: {row['date']}")
+    print(f"Front A: {row['front_a_task']}")
+    print(f"Front B: {row['front_b_task']}")
+    print(f"Front C: {row['front_c_task']}")
+    print(f"Main activity: {row['planned_main_activity']}")
+    print(f"Minimum target: {row['minimum_day_target']}")
+    print(f"Planned hours: {row['planned_hours_total']}")
