@@ -30,6 +30,7 @@ class LogAdvisor:
                 "date",
                 "mode",
                 "created_at",
+                "question"
                 "raw_response"
             ]
             df = pd.DataFrame(columns=headers)
@@ -42,7 +43,7 @@ class LogAdvisor:
         )
         return response.output_text
 
-    def get_advice(self, day_time):
+    def prepare_context(self):
         data = self.load_csv_content()
         analysis = self.load_analysis_content()
 
@@ -53,6 +54,11 @@ class LogAdvisor:
 
         data_text = json.dumps(data, indent=2)
         report_text = json.dumps(report, indent=2)
+        return data_text, report_text
+
+    def get_advice(self, day_time):
+
+        data_text, report_text = self.prepare_context()
 
         if day_time == "morning":
             content = (
@@ -98,12 +104,13 @@ class LogAdvisor:
         self.save_analysis(day_time, response_text)
         return response_text
 
-    def save_analysis(self, day_time, response_text):
+    def save_analysis(self, day_time, response_text, question):
         df_name = "analysis_log.csv"
         row = {
             "date": strftime("%d/%m/%Y", localtime()),
             "mode": day_time,
             "created_at": strftime("%H:%M", localtime()),
+            "question": question,
             "raw_response": response_text
         }
 
@@ -117,16 +124,7 @@ class LogAdvisor:
         df.to_csv(df_name, index=False)
 
     def free_question(self, question):
-        data = self.load_csv_content()
-        analysis = self.load_analysis_content()
-
-        if not analysis:
-            report = "there is no report recorded from the past, therefore you can give your own opinion instead of relying on actual data for now"
-        else:
-            report = analysis
-
-        data_text = json.dumps(data, indent=2)
-        report_text = json.dumps(report, indent=2)
+        data_text, report_text = self.prepare_context()
 
         content = (
             "You are a strict execution advisor.\n"
@@ -142,5 +140,5 @@ class LogAdvisor:
         )
 
         response_text = self.creating_response(content)
-        self.save_analysis("free_advice", response_text)
+        self.save_analysis("free_advice", response_text, question)
         return response_text
